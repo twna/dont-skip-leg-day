@@ -336,7 +336,8 @@ const NotificationManager = ({ onNotificationClick }) => {
     }
   };
   
-  return null; // No UI needed for this component
+  // Return null as this component doesn't render any UI
+  return null;
 };
 
 export default NotificationManager;
