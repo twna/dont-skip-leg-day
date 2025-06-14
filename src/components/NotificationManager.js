@@ -1,12 +1,31 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { getFromStorage, saveToStorage } from '../utils/storage';
 
 const NotificationManager = ({ onNotificationClick }) => {
+  const [notificationSupported, setNotificationSupported] = useState(true);
+  const [secureContext, setSecureContext] = useState(true);
+  
   useEffect(() => {
+    // Check if we're in a secure context (HTTPS or localhost)
+    const isSecureContext = window.isSecureContext;
+    setSecureContext(isSecureContext);
+    
     // Check if browser supports notifications
     if (!("Notification" in window)) {
       console.error("This browser does not support notifications");
+      setNotificationSupported(false);
       return;
+    }
+    
+    // Register service worker for persistent notifications on deployed sites
+    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+          console.log('ServiceWorker registration successful');
+        })
+        .catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
     }
     
     // If permission already granted
@@ -105,19 +124,52 @@ const NotificationManager = ({ onNotificationClick }) => {
   };
   
   const showNotification = () => {
-    // Update notification state
-    const now = new Date();
-    const currentDate = now.toDateString();
+    // If notification is not supported or permission not granted, return
+    if (!notificationSupported || !secureContext || Notification.permission !== 'granted') {
+      console.warn('Notifications not available:', 
+        !notificationSupported ? 'Not supported' : 
+        !secureContext ? 'Not secure context' : 
+        'Permission not granted');
+      
+      // Fall back to console and document title notifications
+      useDocumentTitleNotification();
+      return;
+    }
     
     // Get the user's name if available
     const userName = getFromStorage('legDayUserName') || '';
     
     // Update notification state
-    saveToStorage('legDayNotificationState', {
-      shown: true,
+    const notificationState = {
       acknowledged: false,
-      date: currentDate
-    });
+      date: new Date().toDateString(),
+      lastShown: new Date().toISOString()
+    };
+    saveToStorage('legDayNotificationState', notificationState);
+    
+    // Try to use service worker for notification if available
+    if ('serviceWorker' in navigator && 
+        navigator.serviceWorker.controller && 
+        window.location.protocol === 'https:') {
+      
+      navigator.serviceWorker.ready.then(registration => {
+        registration.showNotification("🦵 DON'T SKIP LEG DAY! 🦵", {
+          body: message,
+          icon: "/favicon.ico",
+          badge: "/favicon.ico",
+          requireInteraction: true,
+          vibrate: [200, 100, 200, 100, 200]
+        });
+        return;
+      }).catch(err => {
+        console.error('Service worker notification failed:', err);
+        // Fall back to regular notification
+        showRegularNotification(message);
+      });
+    } else {
+      // Use regular notification
+      showRegularNotification(message);
+    }
     
     // Update leaderboard data
     if (userName) {
@@ -158,31 +210,76 @@ const NotificationManager = ({ onNotificationClick }) => {
     const message = messages[Math.floor(Math.random() * messages.length)];
     
     // Create the notification with more attention-grabbing settings
-    const notification = new Notification("🦵 DON'T SKIP LEG DAY! 🦵", {
-      body: message,
-      icon: "/favicon.ico", // Use app icon if available
-      requireInteraction: true, // Notification persists until user interacts with it
-      vibrate: [200, 100, 200, 100, 200, 100, 400], // Vibration pattern for mobile
-      badge: "/favicon.ico" // For mobile notifications
-    });
+    showRegularNotification(message);
+  };
+  
+  // Fallback notification method using document title
+  const useDocumentTitleNotification = () => {
+    const originalTitle = document.title;
+    let titleInterval;
     
-    // Add click handler
-    notification.onclick = () => {
-      // Focus the window and trigger the verification process
-      window.focus();
-      onNotificationClick();
-      notification.close();
-      
-      // Mark notification as acknowledged
-      const notificationState = getFromStorage('legDayNotificationState') || {};
-      saveToStorage('legDayNotificationState', {
-        ...notificationState,
-        acknowledged: true
-      });
-      
-      // Clear any pending notification timers
-      if (window.legDayNotificationTimer) {
-        clearTimeout(window.legDayNotificationTimer);
+    // Alternate the document title as a notification
+    titleInterval = setInterval(() => {
+      document.title = document.title === originalTitle ? 
+        "🦵 DON'T SKIP LEG DAY! 🦵" : originalTitle;
+    }, 1000);
+    
+    // Clear interval after 30 seconds
+    setTimeout(() => {
+      clearInterval(titleInterval);
+      document.title = originalTitle;
+    }, 30000);
+    
+    // Try again after a minute
+    setTimeout(() => {
+      useDocumentTitleNotification();
+    }, 60000);
+  };
+  
+  // Function to show regular browser notification
+  const showRegularNotification = (message) => {
+      try {
+        // Create notification
+        const notification = new Notification("🦵 DON'T SKIP LEG DAY! 🦵", {
+          body: message,
+          requireInteraction: true, // Notification persists until user interacts
+          vibrate: [200, 100, 200, 100, 200, 100, 400], // Vibration pattern for mobile
+          badge: "/favicon.ico",
+          icon: "/favicon.ico"
+        });
+        
+        // Handle notification click
+        notification.onclick = () => {
+          // Focus on the window if possible
+          window.focus();
+          
+          // Mark as acknowledged
+          saveToStorage('legDayNotificationState', {
+            acknowledged: true,
+            date: new Date().toDateString()
+          });
+          
+          // Clear reminder timers
+          if (window.legDayNotificationTimer) {
+            clearTimeout(window.legDayNotificationTimer);
+          }
+          
+          if (window.legDayNotificationInterval) {
+            clearInterval(window.legDayNotificationInterval);
+            window.legDayNotificationInterval = null;
+          }
+          
+          // Close the notification
+          notification.close();
+          
+          // Call the callback if provided
+          if (onNotificationClick) {
+            onNotificationClick();
+          }
+        };
+      } catch (error) {
+        console.error('Failed to show notification:', error);
+        useDocumentTitleNotification();
       }
     };
     
