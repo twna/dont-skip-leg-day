@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Test</title>
+</head>
+<body>
+    <h1>Testing Barbie Girl Audio</h1>
+    <button onclick="playAudio()">Play Audio</button>
+    <button onclick="stopAudio()">Stop Audio</button>
+
+    <script>
+        let audio;
+
+        function playAudio() {
+            if (audio) {
+                audio.pause();
+            }
+            
+            audio = new Audio('./audio/barbie-girl.mp3');
+            audio.loop = true;
+            audio.volume = 0.7;
+            
+            const playPromise = audio.play();
+            
+            if (playPromise !== undefined) {
+                playPromise
+                    .then(() => {
+                        console.log('Audio started playing!');
+                    })
+                    .catch(err => {
+                        console.error('Could not play the audio', err);
+                    });
+            }
+        }
+
+        function stopAudio() {
+            if (audio) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+        }
+    </script>
+</body>
+</html>
