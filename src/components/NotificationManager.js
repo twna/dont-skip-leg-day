@@ -6,7 +6,7 @@ const NotificationManager = ({ onNotificationClick }) => {
   const [secureContext, setSecureContext] = useState(true);
 
   // Fallback notification method using document title
-  const useDocumentTitleNotification = () => {
+  const flashDocumentTitle = () => {
     const originalTitle = document.title;
     let titleInterval;
     
@@ -24,7 +24,7 @@ const NotificationManager = ({ onNotificationClick }) => {
     
     // Try again after a minute
     setTimeout(() => {
-      useDocumentTitleNotification();
+      flashDocumentTitle();
     }, 60000);
   };
   
@@ -71,7 +71,7 @@ const NotificationManager = ({ onNotificationClick }) => {
       };
     } catch (error) {
       console.error('Failed to show notification:', error);
-      useDocumentTitleNotification();
+      flashDocumentTitle();
     }
   };
 
@@ -85,7 +85,7 @@ const NotificationManager = ({ onNotificationClick }) => {
         'Permission not granted');
       
       // Fall back to console and document title notifications
-      useDocumentTitleNotification();
+      flashDocumentTitle();
       return;
     }
     
