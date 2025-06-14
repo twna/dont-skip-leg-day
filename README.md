@@ -1,70 +1,112 @@
-# Getting Started with Create React App
+# 🦵 Don't Skip Leg Day Alarm 🦵
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A humorous, frontend-only web application designed to comically prevent gym-goers from skipping leg day workouts. This app uses a combination of browser notifications, webcam verification, and funny punishments to keep you accountable for leg day!
 
-## Available Scripts
+## 🎯 Features
 
-In the project directory, you can run:
+### Weekly Alarm Notification
+- Set a weekly recurring alarm for your leg day
+- Browser notifications alert you when it's time
+- Persistent alerts that repeat until you take action
 
-### `npm start`
+### "Quad Verification" System
+- Upload a photo via webcam or from your device
+- Our "sophisticated" AI (actually just random) verifies if you've been skipping leg day
+- Get instant success or failure results with humorous messages
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Punishment Mode
+- When verification fails, Barbie Girl by Aqua plays on loop
+- Complete 100 squats to silence the music
+- Basic motion detection counts your squats using your webcam
+- Cheat detection system with snarky comments
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Chicken-Leg Mocking Memes
+- View hilarious memes mocking chicken legs when you fail verification
+- Get motivation to never skip leg day again!
 
-### `npm test`
+## 📋 Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js and npm installed
+- Modern web browser with webcam access and notification permissions
 
-### `npm run build`
+## 🚀 Installation & Setup
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. Clone the repository
+```
+git clone [repository-url]
+cd dont-skip-leg-day
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. Install dependencies
+```
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. Add the "Barbie Girl" audio file
+   - Due to copyright restrictions, you'll need to obtain this audio file yourself
+   - Save it as `barbie-girl.mp3` in the `src/assets/audio/` directory
 
-### `npm run eject`
+4. Start the development server
+```
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 💻 How to Use
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. **Set Up Your Alarm**
+   - Choose the day of the week and time for your leg day workout
+   - Click "Set Alarm" to activate
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+2. **Verification Process**
+   - When the alarm triggers, you'll get a browser notification
+   - Click on the notification to start verification
+   - Use your webcam to take a photo or upload an image
+   - Click "Verify Leg Day" to start the verification process
 
-## Learn More
+3. **Success or Punishment**
+   - If you pass (random 40% chance): Celebration message and alarm resets for next week
+   - If you fail (random 60% chance): Chicken leg memes and punishment mode
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+4. **Punishment Mode**
+   - Complete 100 squats detected by your webcam
+   - No cheating! The app will call you out if it thinks you're trying to skip squats
+   - After 100 squats, you're free until next week!
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🛠️ Tech Stack
 
-### Code Splitting
+- React.js (Create React App)
+- Tailwind CSS for styling
+- React-Webcam for camera access
+- Howler.js for audio playback
+- Local Storage API for data persistence
+- Browser Notifications API
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 📱 Deployment
 
-### Analyzing the Bundle Size
+This app is designed to be deployed easily on Netlify, Vercel, or GitHub Pages:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```
+npm run build
+```
 
-### Making a Progressive Web App
+Then deploy the contents of the `build` directory to your hosting provider of choice.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 😂 Humor Disclaimer
 
-### Advanced Configuration
+This app is meant to be funny and lighthearted! The "verification" system is completely random and doesn't actually analyze your legs. The squat counter uses very basic motion detection that might not be accurate. It's all in good fun!
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## 📝 License
 
-### Deployment
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## 🙏 Acknowledgments
 
-### `npm run build` fails to minify
+- Gym bros everywhere who never skip leg day
+- All the chicken legs that inspired this app
+- Aqua for the "motivational" punishment music
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+
+Built with 💪 and lots of humor. Never skip leg day again!
