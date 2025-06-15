@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/dont-skip-leg-day/static/css/main.66c3c851.css",
-    "main.js": "/dont-skip-leg-day/static/js/main.59bda73d.js",
+    "main.js": "/dont-skip-leg-day/static/js/main.d42a83c6.js",
     "static/js/453.1179f010.chunk.js": "/dont-skip-leg-day/static/js/453.1179f010.chunk.js",
     "static/media/caution-chicken-legs.png": "/dont-skip-leg-day/static/media/caution-chicken-legs.07098ef5936516e022a5.png",
     "index.html": "/dont-skip-leg-day/index.html",
     "main.66c3c851.css.map": "/dont-skip-leg-day/static/css/main.66c3c851.css.map",
-    "main.59bda73d.js.map": "/dont-skip-leg-day/static/js/main.59bda73d.js.map",
+    "main.d42a83c6.js.map": "/dont-skip-leg-day/static/js/main.d42a83c6.js.map",
     "453.1179f010.chunk.js.map": "/dont-skip-leg-day/static/js/453.1179f010.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.66c3c851.css",
-    "static/js/main.59bda73d.js"
+    "static/js/main.d42a83c6.js"
   ]
 }
