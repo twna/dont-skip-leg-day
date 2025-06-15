@@ -48,28 +48,38 @@ self.addEventListener('fetch', event => {
 });
 
 // Handle notification clicks
-self.addEventListener('notificationclick', event => {
+self.addEventListener('notificationclick', function(event) {
+  console.log('Notification clicked in service worker', event);
+  
+  // Close the notification
   event.notification.close();
   
-  // Focus on the page or open it
-  event.waitUntil(
-    clients.matchAll({
-      type: 'window'
-    })
-    .then(clientList => {
-      for (const client of clientList) {
-        if (client.url === '/' && 'focus' in client) {
-          return client.focus();
+  // Send message to client that notification was clicked
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        action: 'notificationClick',
+        notification: {
+          title: event.notification.title,
+          tag: event.notification.tag,
+          data: event.notification.data
         }
+      });
+    });
+  });
+  
+  // Focus or open a window if clicked
+  event.waitUntil(
+    self.clients.matchAll({type: 'window'}).then(clientList => {
+      // If we have a client, focus it
+      if (clientList.length > 0) {
+        return clientList[0].focus();
       }
-      
-      if (clients.openWindow) {
-        return clients.openWindow('/');
-      }
+      // Otherwise open a new window
+      return self.clients.openWindow('/');
     })
   );
 });
-
 // Activate and clean up old caches
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];

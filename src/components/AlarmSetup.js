@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { getFromStorage, saveToStorage } from '../utils/storage';
 
 const AlarmSetup = ({ onAlarmSet }) => {
-  const [alarmDay, setAlarmDay] = useState(1); // Monday by default
-  const ALARM_TIME = '01:59'; // Hardcoded time
+  const [alarmDay, setAlarmDay] = useState(0); // Monday by default
+  const ALARM_TIME = '02:52'; // Hardcoded time
   const [alarmActive, setAlarmActive] = useState(false);
 
   useEffect(() => {

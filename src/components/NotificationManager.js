@@ -40,22 +40,18 @@ const NotificationManager = ({ onNotificationClick }) => {
         icon: "/favicon.ico"
       });
       
-      // Handle notification click
-      notification.onclick = () => {
-        // Focus on the window if possible
-        window.focus();
-        
+      // Add click event handler to stop notifications when clicked
+      notification.onclick = function() {
+        console.log('Notification clicked - stopping notifications');
         // Mark as acknowledged
-        saveToStorage('legDayNotificationState', {
+        const notificationState = {
           acknowledged: true,
-          date: new Date().toDateString()
-        });
+          date: new Date().toDateString(),
+          lastShown: new Date().toISOString()
+        };
+        saveToStorage('legDayNotificationState', notificationState);
         
-        // Clear reminder timers
-        if (window.legDayNotificationTimer) {
-          clearTimeout(window.legDayNotificationTimer);
-        }
-        
+        // Clear any notification intervals
         if (window.legDayNotificationInterval) {
           clearInterval(window.legDayNotificationInterval);
           window.legDayNotificationInterval = null;
@@ -68,6 +64,9 @@ const NotificationManager = ({ onNotificationClick }) => {
         if (onNotificationClick) {
           onNotificationClick();
         }
+        
+        // Focus the window
+        window.focus();
       };
     } catch (error) {
       console.error('Failed to show notification:', error);
@@ -118,13 +117,41 @@ const NotificationManager = ({ onNotificationClick }) => {
         window.location.protocol === 'https:') {
       
       navigator.serviceWorker.ready.then(registration => {
+        console.log('Service worker ready, sending notification');
         registration.showNotification("🦵 DON'T SKIP LEG DAY! 🦵", {
           body: message,
           icon: "/favicon.ico",
           badge: "/favicon.ico",
           requireInteraction: true,
-          vibrate: [200, 100, 200, 100, 200]
+          vibrate: [200, 100, 200, 100, 200],
+          data: { acknowledged: true }, // Add data for the click handler
+          actions: [
+            { action: 'acknowledge', title: 'Acknowledge' }
+          ]
         });
+        console.log('Notification sent via service worker');
+        
+        // Add notification click event listener to service worker
+        navigator.serviceWorker.addEventListener('message', function(event) {
+          if (event.data && event.data.action === 'notificationClick') {
+            console.log('Notification was clicked - stopping notifications');
+            // Mark as acknowledged
+            const notificationState = {
+              acknowledged: true,
+              date: new Date().toDateString(),
+              lastShown: new Date().toISOString()
+            };
+            saveToStorage('legDayNotificationState', notificationState);
+            
+            // Clear notification interval
+            if (window.legDayNotificationInterval) {
+              clearInterval(window.legDayNotificationInterval);
+              window.legDayNotificationInterval = null;
+            }
+          }
+        });
+        
+        return;
       }).catch(err => {
         console.error('Service worker notification failed:', err);
         // Fall back to regular notification
@@ -219,47 +246,55 @@ const NotificationManager = ({ onNotificationClick }) => {
     checkAlarm();
   };
   
-  // Check if it's time to show alarm notification
+  // Show notification immediately without checking day or time
   const checkAlarm = () => {
+    console.log('Checking alarm - immediate notification mode');
     const savedAlarm = getFromStorage('legDayAlarm');
     
-    if (!savedAlarm) return;
+    if (!savedAlarm) {
+      console.log('No alarm data found in storage, showing notification anyway');
+      showNotification();
+      return;
+    }
     
-    const { day, time, active } = savedAlarm;
+    const { active } = savedAlarm;
+    console.log('Alarm active status:', active);
     
-    if (!active) return;
+    // Even if alarm is not active, we'll still show notification in this mode
+    // Just log the status but proceed anyway
+    if (!active) {
+      console.log('Alarm is not active, but showing notification anyway');
+    }
     
     const now = new Date();
-    const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
     const currentDate = now.toDateString();
     
-    // Convert alarm time to hours and minutes
-    const [alarmHours, alarmMinutes] = time.split(':').map(num => parseInt(num));
+    // Get notification state
+    const notificationState = getFromStorage('legDayNotificationState') || {};
+    console.log('Notification state:', notificationState);
     
-    // Check if it's the right day and time
-    if (currentDay === day) {
-      const currentHours = now.getHours();
-      const currentMinutes = now.getMinutes();
-      
-      // Get notification state
-      const notificationState = getFromStorage('legDayNotificationState') || {};
-      
-      // If current time is at or past the alarm time, check if we should show notification
-      if ((currentHours > alarmHours) || 
-         (currentHours === alarmHours && currentMinutes >= alarmMinutes)) {
-        
-        // Check if the user has acknowledged today's notification
-        if (!notificationState.acknowledged || notificationState.date !== currentDate) {
-          // If not acknowledged or it's a new day, show notification
-          showNotification();
-        }
-      }
+    // Check if notification has been acknowledged today
+    if (!notificationState.acknowledged || notificationState.date !== currentDate) {
+      console.log('Showing notification - always mode');
+      showNotification();
+    } else {
+      console.log('Notification already acknowledged today, but showing again anyway');
+      // In always mode, we'll reset acknowledgment to trigger new notifications
+      const resetState = {
+        acknowledged: false,
+        date: currentDate,
+        lastShown: new Date().toISOString()
+      };
+      saveToStorage('legDayNotificationState', resetState);
+      showNotification();
     }
   };
   
   useEffect(() => {
+    console.log('NotificationManager initialized');
     // Check if we're in a secure context (HTTPS or localhost)
     const isSecureContext = window.isSecureContext;
+    console.log('Secure context?', isSecureContext);
     setSecureContext(isSecureContext);
     
     // Check if browser supports notifications
@@ -268,27 +303,48 @@ const NotificationManager = ({ onNotificationClick }) => {
       setNotificationSupported(false);
       return;
     }
+    console.log('Notifications supported, permission:', Notification.permission);
     
-    // Register service worker for persistent notifications on deployed sites
-    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
-      navigator.serviceWorker.register('/service-worker.js')
+    // Always register service worker
+    if ('serviceWorker' in navigator) {
+      console.log('Service worker supported, registering');
+      const swPath = window.location.protocol === 'https:' ? '/dont-skip-leg-day/service-worker.js' : '/service-worker.js';
+      navigator.serviceWorker.register(swPath)
         .then(registration => {
-          console.log('ServiceWorker registration successful');
+          console.log('ServiceWorker registration successful', registration);
         })
         .catch(err => {
-          console.log('ServiceWorker registration failed: ', err);
+          console.error('ServiceWorker registration failed: ', err);
         });
+    } else {
+      console.log('Service worker not supported');
     }
     
     // If permission already granted
     if (Notification.permission === "granted") {
+      console.log('Notification permission already granted');
       // Set up the notification check interval
       setupNotificationCheck();
+      
+      // Immediately check if we should show a notification for testing
+      setTimeout(() => {
+        console.log('Testing notification display');
+        checkAlarm();
+      }, 3000);
+      
     } else if (Notification.permission !== "denied") {
+      console.log('Requesting notification permission');
       // Request permission if not denied already
       Notification.requestPermission().then(permission => {
+        console.log('Permission response:', permission);
         if (permission === "granted") {
           setupNotificationCheck();
+          
+          // Test notification after permission granted
+          setTimeout(() => {
+            console.log('Testing notification after permission granted');
+            showNotification();
+          }, 2000);
         }
       });
     }
